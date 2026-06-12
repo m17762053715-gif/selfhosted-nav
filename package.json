@@ -1,6 +1,6 @@
 {
   "name": "selfhosted-nav",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "description": "中文自托管软件导航站 - 数据来自 awesome-selfhosted (CC-BY-SA)",
   "scripts": {

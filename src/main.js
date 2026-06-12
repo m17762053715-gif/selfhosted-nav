@@ -11,20 +11,27 @@ const STATUS_META = {
 
 const state = {
   all: [],
-  tags: [],
-  licenses: {},
+  groups: [],
   tr: {},          // 英文 -> 中文 翻译表
   lang: "zh",      // zh | en 显示语言
   fuse: null,
   query: "",
-  activeCategories: new Set(),
-  activePlatforms: new Set(),
-  activeLicenses: new Set(),
+  activeSubs: new Set(),       // 选中的小类(中文名)
+  activeFreshness: new Set(),  // 选中的更新时间档位
   hideArchived: true,
   dockerOnly: false,
   sort: "health",
   view: "all", // all | trending_1d | trending_7d | stars
 };
+
+// 更新时间档位:key 对应 software.freshness,顺序即展示顺序
+const FRESHNESS_META = [
+  { key: "recent", icon: "🟢", label: "近 1 年内" },
+  { key: "y1", icon: "🟡", label: "1~2 年前" },
+  { key: "y2", icon: "🟠", label: "2~3 年前" },
+  { key: "old", icon: "🔴", label: "3 年以上" },
+  { key: "unknown", icon: "⚪", label: "未知" },
+];
 
 // 榜单视图 -> 对应排序键 + 涨幅字段(用于徽章)
 const RANK_VIEWS = {
@@ -53,8 +60,7 @@ async function load() {
     if (!dataRes.ok) throw new Error(`data.json ${dataRes.status}`);
     const data = await dataRes.json();
     state.all = data.software;
-    state.tags = data.tags;
-    state.licenses = data.licenses;
+    state.groups = data.groups;
     if (trRes && trRes.ok) {
       try {
         state.tr = await trRes.json();
@@ -92,45 +98,80 @@ function showError() {
   </div>`;
 }
 
-// 统计每个分面值的出现次数,降序取前 N
-function countBy(items, getter) {
-  const map = new Map();
-  for (const it of items) {
-    for (const v of getter(it)) {
-      map.set(v, (map.get(v) || 0) + 1);
-    }
-  }
-  return [...map.entries()].sort((a, b) => b[1] - a[1]);
-}
-
+// 构建侧栏分面:两级分类树 + 更新时间档位
 function buildFacets() {
-  const cats = countBy(state.all, (s) => s.tags);
-  renderFacet($("categories"), cats, state.activeCategories, "cat", true);
-
-  const plats = countBy(state.all, (s) => s.platforms).slice(0, 30);
-  renderFacet($("platforms"), plats, state.activePlatforms, "plat", false);
-
-  const lics = countBy(state.all, (s) => s.licenses).slice(0, 20);
-  renderFacet($("licenses"), lics, state.activeLicenses, "lic", false);
+  renderCategoryTree();
+  renderFreshness();
 }
 
-// translate=true 时分面名显示中文译名,但筛选值仍用英文原文
-function renderFacet(container, entries, activeSet, kind, translate) {
-  container.innerHTML = "";
-  for (const [value, count] of entries) {
+// 两级分类树:大类可点击展开/收起小类,小类是复选框
+function renderCategoryTree() {
+  const root = $("categories");
+  root.innerHTML = "";
+  for (const g of state.groups) {
+    const block = document.createElement("div");
+    block.className = "cat-group";
+
+    const head = document.createElement("button");
+    head.className = "cat-group-head";
+    head.type = "button";
+    head.innerHTML = `<span class="cat-arrow">▸</span>
+      <span class="cat-icon">${g.icon}</span>
+      <span class="cat-gname">${escapeHtml(g.name)}</span>
+      <span class="facet-count">${g.count}</span>`;
+
+    const subWrap = document.createElement("div");
+    subWrap.className = "cat-subs";
+    subWrap.hidden = true;
+    for (const sub of g.subs) {
+      const item = document.createElement("label");
+      item.className = "facet-item sub-item";
+      item.dataset.value = sub.name;
+      item.innerHTML = `<input type="checkbox" data-kind="sub" />
+        <span class="facet-name" title="${escapeHtml(sub.name)}">${escapeHtml(sub.name)}</span>
+        <span class="facet-count">${sub.count}</span>`;
+      item.querySelector("input").addEventListener("change", (e) => {
+        if (e.target.checked) state.activeSubs.add(sub.name);
+        else state.activeSubs.delete(sub.name);
+        render();
+      });
+      subWrap.appendChild(item);
+    }
+
+    head.addEventListener("click", () => {
+      subWrap.hidden = !subWrap.hidden;
+      head.classList.toggle("open", !subWrap.hidden);
+    });
+
+    block.appendChild(head);
+    block.appendChild(subWrap);
+    root.appendChild(block);
+  }
+}
+
+// 更新时间档位筛选
+function renderFreshness() {
+  const counts = new Map();
+  for (const s of state.all) {
+    counts.set(s.freshness, (counts.get(s.freshness) || 0) + 1);
+  }
+  const root = $("freshness");
+  root.innerHTML = "";
+  for (const f of FRESHNESS_META) {
+    const n = counts.get(f.key) || 0;
+    if (n === 0) continue;
     const item = document.createElement("label");
     item.className = "facet-item";
-    item.dataset.value = value;
-    const display = translate ? t(value) : value;
-    item.innerHTML = `<input type="checkbox" data-kind="${kind}" />
-      <span class="facet-name" title="${escapeHtml(value)}">${escapeHtml(display)}</span>
-      <span class="facet-count">${count}</span>`;
+    item.dataset.value = f.key;
+    item.innerHTML = `<input type="checkbox" data-kind="fresh" />
+      <span class="facet-name">${f.icon} ${escapeHtml(f.label)}</span>
+      <span class="facet-count">${n}</span>`;
     item.querySelector("input").addEventListener("change", (e) => {
-      if (e.target.checked) activeSet.add(value);
-      else activeSet.delete(value);
+      if (e.target.checked) state.activeFreshness.add(f.key);
+      else state.activeFreshness.delete(f.key);
       render();
     });
-    container.appendChild(item);
+    root.appendChild(item);
   }
 }
 
@@ -173,14 +214,30 @@ function bindEvents() {
   $("langToggle").addEventListener("click", () => {
     state.lang = state.lang === "zh" ? "en" : "zh";
     $("langToggle").classList.toggle("en", state.lang === "en");
-    buildFacets();  // 分类名随语言切换
     render();
   });
   $("catFilter").addEventListener("input", (e) => {
-    const q = e.target.value.toLowerCase();
-    for (const el of $("categories").children) {
-      const name = el.dataset.value.toLowerCase();
-      el.style.display = name.includes(q) ? "" : "none";
+    const q = e.target.value.toLowerCase().trim();
+    for (const block of $("categories").children) {
+      const head = block.querySelector(".cat-group-head");
+      const subs = block.querySelector(".cat-subs");
+      const gname = head.querySelector(".cat-gname").textContent.toLowerCase();
+      let anyMatch = false;
+      for (const el of subs.children) {
+        const name = el.dataset.value.toLowerCase();
+        const hit = !q || name.includes(q) || gname.includes(q);
+        el.style.display = hit ? "" : "none";
+        if (hit) anyMatch = true;
+      }
+      // 有搜索词时,大类整体按命中情况显隐并自动展开
+      block.style.display = !q || anyMatch ? "" : "none";
+      if (q && anyMatch) {
+        subs.hidden = false;
+        head.classList.add("open");
+      } else if (!q) {
+        subs.hidden = true;
+        head.classList.remove("open");
+      }
     }
   });
   $("clearFilters").addEventListener("click", clearFilters);
@@ -189,9 +246,8 @@ function bindEvents() {
 // 重置所有搜索/筛选条件,恢复全量列表
 function clearFilters() {
   state.query = "";
-  state.activeCategories.clear();
-  state.activePlatforms.clear();
-  state.activeLicenses.clear();
+  state.activeSubs.clear();
+  state.activeFreshness.clear();
   state.hideArchived = true;
   state.dockerOnly = false;
   // 同步 UI 控件
@@ -199,12 +255,19 @@ function clearFilters() {
   $("catFilter").value = "";
   $("hideArchived").checked = true;
   $("dockerOnly").checked = false;
-  for (const facet of ["categories", "platforms", "licenses"]) {
-    for (const el of $(facet).children) {
-      const cb = el.querySelector("input");
-      if (cb) cb.checked = false;
-      el.style.display = "";
+  for (const facet of ["categories", "freshness"]) {
+    for (const cb of $(facet).querySelectorAll("input[type=checkbox]")) {
+      cb.checked = false;
     }
+  }
+  // 收起分类树、还原显隐
+  for (const block of $("categories").children) {
+    block.style.display = "";
+    const subs = block.querySelector(".cat-subs");
+    const head = block.querySelector(".cat-group-head");
+    subs.hidden = true;
+    head.classList.remove("open");
+    for (const el of subs.children) el.style.display = "";
   }
   render();
 }
@@ -231,9 +294,8 @@ function applyFilters() {
   list = list.filter((s) => {
     if (state.hideArchived && (s.status === "archived" || s.status === "stale")) return false;
     if (state.dockerOnly && !s.has_docker) return false;
-    if (state.activeCategories.size && !s.tags.some((t) => state.activeCategories.has(t))) return false;
-    if (state.activePlatforms.size && !s.platforms.some((p) => state.activePlatforms.has(p))) return false;
-    if (state.activeLicenses.size && !s.licenses.some((l) => state.activeLicenses.has(l))) return false;
+    if (state.activeSubs.size && !state.activeSubs.has(s.sub)) return false;
+    if (state.activeFreshness.size && !state.activeFreshness.has(s.freshness)) return false;
     return true;
   });
 

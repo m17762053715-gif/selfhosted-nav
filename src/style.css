@@ -150,6 +150,32 @@ select option {
 .facet-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
 .facet-count { color: var(--text-dim); font-size: 11px; }
 
+/* 两级分类树 */
+.cat-tree { max-height: 420px; }
+.cat-group { margin-bottom: 2px; }
+.cat-group-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  background: none;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+}
+.cat-group-head:hover { background: rgba(110, 168, 254, 0.1); }
+.cat-arrow { color: var(--text-dim); font-size: 10px; transition: transform 0.15s; flex-shrink: 0; }
+.cat-group-head.open .cat-arrow { transform: rotate(90deg); }
+.cat-icon { flex-shrink: 0; }
+.cat-gname { flex: 1; }
+.cat-subs { padding-left: 18px; }
+.sub-item { font-size: 12.5px; }
+
 .content { flex: 1; min-width: 0; }
 .result-bar { color: var(--text-dim); font-size: 13px; margin-bottom: 14px; }
 

@@ -13,6 +13,8 @@ import os
 
 import yaml
 
+from categories import GROUP_META, classify
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CACHE = os.path.join(ROOT, ".cache")
 OUT = os.path.join(ROOT, "public", "data.json")
@@ -172,6 +174,27 @@ def compute_health(entry):
     return score, status
 
 
+# 新鲜度档位:按最后更新距今的月数划分,供前端「更新时间」筛选
+FRESH_RECENT = "recent"    # 🟢 近 1 年内
+FRESH_1Y = "y1"            # 🟡 1~2 年前
+FRESH_2Y = "y2"            # 🟠 2~3 年前
+FRESH_OLD = "old"          # 🔴 3 年以上
+FRESH_UNKNOWN = "unknown"  # ⚪ 无更新时间(自建仓库)
+
+
+def freshness(updated_at):
+    months = months_since(parse_date(updated_at))
+    if months is None:
+        return FRESH_UNKNOWN
+    if months <= 12:
+        return FRESH_RECENT
+    if months <= 24:
+        return FRESH_1Y
+    if months <= 36:
+        return FRESH_2Y
+    return FRESH_OLD
+
+
 def build_software(path):
     entry = load_yaml(path)
     if not entry or "name" not in entry:
@@ -179,6 +202,8 @@ def build_software(path):
     score, status = compute_health(entry)
     rel = entry.get("current_release") or {}
     platforms = entry.get("platforms") or []
+    tags = entry.get("tags") or []
+    group, sub = classify(entry["name"], tags)
     return {
         "name": entry["name"],
         "description": entry.get("description", ""),
@@ -187,9 +212,12 @@ def build_software(path):
         "demo_url": entry.get("demo_url", ""),
         "licenses": entry.get("licenses") or [],
         "platforms": platforms,
-        "tags": entry.get("tags") or [],
+        "tags": tags,
+        "group": group,
+        "sub": sub,
         "stars": entry.get("stargazers_count", 0) or 0,
         "updated_at": str(entry.get("updated_at", "")) if entry.get("updated_at") else "",
+        "freshness": freshness(entry.get("updated_at")),
         "archived": bool(entry.get("archived", False)),
         "release_tag": rel.get("tag", ""),
         "has_docker": any(p.lower() == "docker" for p in platforms),
@@ -245,10 +273,27 @@ def main():
                 "url": entry.get("url", ""),
             }
 
+    # 两级分类结构:大类 + 其下出现过的小类(按数量降序)
+    sub_count = {}
+    for s in software:
+        key = (s["group"], s["sub"])
+        sub_count[key] = sub_count.get(key, 0) + 1
+    groups = []
+    for gkey, icon, gname in GROUP_META:
+        subs = sorted(
+            ({"name": sub, "count": n} for (g, sub), n in sub_count.items() if g == gkey),
+            key=lambda x: -x["count"],
+        )
+        total = sum(x["count"] for x in subs)
+        if total == 0:
+            continue
+        groups.append({"key": gkey, "icon": icon, "name": gname, "count": total, "subs": subs})
+
     data = {
         "generated_at": str(TODAY),
         "source": "https://github.com/awesome-selfhosted/awesome-selfhosted-data (CC-BY-SA)",
         "software": software,
+        "groups": groups,
         "tags": tags,
         "licenses": licenses,
     }
