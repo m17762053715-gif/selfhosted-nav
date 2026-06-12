@@ -27,6 +27,8 @@
         <select id="sort">
           <option value="health">健康度</option>
           <option value="stars">Star 数</option>
+          <option value="trending_1d">涨星·今日</option>
+          <option value="trending_7d">涨星·7日</option>
           <option value="updated">最近更新</option>
           <option value="name">名称</option>
         </select>
@@ -55,6 +57,12 @@
     </aside>
 
     <main class="content">
+      <nav class="views" id="views">
+        <button class="view-tab active" data-view="all">全部</button>
+        <button class="view-tab" data-view="trending_1d">🔥 涨星·今日</button>
+        <button class="view-tab" data-view="trending_7d">📈 涨星·7日</button>
+        <button class="view-tab" data-view="stars">⭐ Star 总榜</button>
+      </nav>
       <div class="result-bar" id="resultBar"></div>
       <div class="grid" id="grid"></div>
       <div class="empty" id="empty" hidden>没有匹配的软件,换个条件试试。</div>

@@ -23,7 +23,16 @@ const state = {
   hideArchived: true,
   dockerOnly: false,
   sort: "health",
+  view: "all", // all | trending_1d | trending_7d | stars
 };
+
+// 榜单视图 -> 对应排序键 + 涨幅字段(用于徽章)
+const RANK_VIEWS = {
+  trending_1d: { sort: "trending_1d", delta: "stars_delta_1d", label: "今日涨星榜" },
+  trending_7d: { sort: "trending_7d", delta: "stars_delta_7d", label: "7 日涨星榜" },
+  stars: { sort: "stars", delta: null, label: "Star 总榜" },
+};
+const RANK_LIMIT = 100;
 
 const $ = (id) => document.getElementById(id);
 
@@ -122,6 +131,15 @@ function bindEvents() {
     state.sort = e.target.value;
     render();
   });
+  $("views").addEventListener("click", (e) => {
+    const btn = e.target.closest(".view-tab");
+    if (!btn) return;
+    state.view = btn.dataset.view;
+    for (const b of $("views").children) {
+      b.classList.toggle("active", b === btn);
+    }
+    render();
+  });
   $("hideArchived").addEventListener("change", (e) => {
     state.hideArchived = e.target.checked;
     render();
@@ -146,6 +164,19 @@ function bindEvents() {
 }
 
 function applyFilters() {
+  const rank = RANK_VIEWS[state.view];
+
+  // 榜单视图:不走侧栏筛选,只按榜单字段排序取 Top N
+  if (rank) {
+    let list = state.all.slice();
+    // 涨星榜只保留有正涨幅的项目
+    if (rank.delta) {
+      list = list.filter((s) => (s[rank.delta] ?? 0) > 0);
+    }
+    list.sort(sortBy(rank.sort));
+    return list.slice(0, RANK_LIMIT);
+  }
+
   // 搜索:有 query 走 Fuse,否则全量
   let list = state.query
     ? state.fuse.search(state.query).map((r) => r.item)
@@ -162,30 +193,41 @@ function applyFilters() {
 
   // 排序(搜索态默认保留相关度,除非用户显式选了排序字段)
   if (!(state.query && state.sort === "health")) {
-    list = sortList(list);
+    list = list.sort(sortBy(state.sort));
   }
   return list;
 }
 
-function sortList(list) {
+function sortBy(key) {
   const by = {
     health: (a, b) => (b.health_score ?? -1) - (a.health_score ?? -1),
     stars: (a, b) => b.stars - a.stars,
+    trending_1d: (a, b) => (b.stars_delta_1d ?? -1) - (a.stars_delta_1d ?? -1),
+    trending_7d: (a, b) => (b.stars_delta_7d ?? -1) - (a.stars_delta_7d ?? -1),
     updated: (a, b) => (b.updated_at || "").localeCompare(a.updated_at || ""),
     name: (a, b) => a.name.localeCompare(b.name),
   };
-  return list.sort(by[state.sort] || by.health);
+  return by[key] || by.health;
 }
 
 function render() {
+  const rank = RANK_VIEWS[state.view];
+  document.body.classList.toggle("rank-mode", !!rank);
+
   const list = applyFilters();
   const grid = $("grid");
-  $("resultBar").textContent = `共 ${list.length} 个结果`;
   $("empty").hidden = list.length > 0;
 
+  if (rank) {
+    $("resultBar").textContent = `${rank.label} · 共 ${list.length} 个`;
+    grid.innerHTML = list.map((s, i) => cardHtml(s, i + 1, rank.delta)).join("");
+    return;
+  }
+
+  $("resultBar").textContent = `共 ${list.length} 个结果`;
   // 限制首屏渲染数量,避免一次性插入上千 DOM
   const slice = list.slice(0, 300);
-  grid.innerHTML = slice.map(cardHtml).join("");
+  grid.innerHTML = slice.map((s) => cardHtml(s)).join("");
   if (list.length > 300) {
     grid.insertAdjacentHTML(
       "beforeend",
@@ -194,12 +236,21 @@ function render() {
   }
 }
 
-function cardHtml(s) {
+function cardHtml(s, position, deltaField) {
   const st = STATUS_META[s.status] || STATUS_META.unknown;
   const score = s.health_score == null ? "—" : s.health_score;
   const tags = s.platforms.slice(0, 3).map((p) => `<span class="tag">${escapeHtml(p)}</span>`).join("");
   const lic = s.licenses[0] ? `<span class="tag lic">${escapeHtml(s.licenses[0])}</span>` : "";
   const stars = s.stars ? `★ ${formatNum(s.stars)}` : "";
+
+  // 榜单名次徽章(前三高亮)
+  const rankBadge = position
+    ? `<span class="rank rank-${position <= 3 ? position : "n"}">${position}</span>`
+    : "";
+  // 涨幅徽章:榜单指定了 delta 字段且 >0 才显示
+  const dv = deltaField ? s[deltaField] : null;
+  const trend = dv && dv > 0 ? `<span class="trend">+${formatNum(dv)} ↑</span>` : "";
+
   const links = [
     s.website_url && `<a href="${escapeHtml(s.website_url)}" target="_blank" rel="noopener">官网</a>`,
     s.source_code_url && `<a href="${escapeHtml(s.source_code_url)}" target="_blank" rel="noopener">源码</a>`,
@@ -208,13 +259,13 @@ function cardHtml(s) {
 
   return `<article class="card ${st.cls}">
     <div class="card-head">
-      <h3 class="card-name">${escapeHtml(s.name)}</h3>
+      <h3 class="card-name">${rankBadge}${escapeHtml(s.name)}</h3>
       <span class="status" title="健康分 ${score}">${st.icon} ${score}</span>
     </div>
     <p class="card-desc">${escapeHtml(t(s.description))}</p>
     <div class="card-tags">${lic}${tags}</div>
     <div class="card-foot">
-      <span class="stars">${stars}</span>
+      <span class="stars">${stars} ${trend}</span>
       <span class="links">${links}</span>
     </div>
   </article>`;

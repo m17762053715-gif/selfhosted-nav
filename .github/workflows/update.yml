@@ -1,0 +1,77 @@
+name: Daily Update & Deploy
+
+# 每日定时:拉取最新数据 -> 算健康分/涨星 -> 翻译 -> 提交回仓库 -> 构建部署。
+# 不监听 push,只靠 cron + 手动触发,避免提交回仓库再触发自身造成循环。
+on:
+  schedule:
+    - cron: "20 2 * * *"   # 每日 UTC 02:20(北京时间约 10:20)
+  workflow_dispatch:
+
+permissions:
+  contents: write   # 提交更新后的数据回 main
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  update-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 安装 Python 依赖
+        run: pip install pyyaml requests
+
+      - name: 拉取数据并计算
+        run: |
+          python scripts/fetch_data.py
+          python scripts/build_dataset.py
+
+      - name: 翻译新增条目(可缺省,失败不中断)
+        continue-on-error: true
+        env:
+          AGNES_API_KEY: ${{ secrets.AGNES_API_KEY }}
+        run: |
+          if [ -z "$AGNES_API_KEY" ]; then
+            echo "未配置 AGNES_API_KEY,跳过翻译。"
+            exit 0
+          fi
+          python scripts/translate.py
+
+      - name: 提交更新的数据回 main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add public/data.json public/star_history.json public/translations.json
+          if git diff --staged --quiet; then
+            echo "数据无变化,跳过提交。"
+          else
+            git commit -m "chore: daily data update [skip ci]"
+            git push
+          fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: 构建
+        run: |
+          npm ci
+          npm run build
+        env:
+          GITHUB_ACTIONS: "true"
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

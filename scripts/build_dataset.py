@@ -16,8 +16,14 @@ import yaml
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CACHE = os.path.join(ROOT, ".cache")
 OUT = os.path.join(ROOT, "public", "data.json")
+HISTORY_OUT = os.path.join(ROOT, "public", "star_history.json")
 
-TODAY = datetime.date(2026, 6, 12)  # 构建基准日,避免运行时漂移影响可复现性
+HISTORY_DAYS = 30  # star 历史滚动保留天数
+
+# 构建基准日:CI 每日跑用真实 today 推进历史;
+# 设 SNAPSHOT_DATE 可覆盖(本地复现测试用)。
+_snapshot = os.environ.get("SNAPSHOT_DATE")
+TODAY = datetime.date.fromisoformat(_snapshot) if _snapshot else datetime.date.today()
 
 # 状态标签
 STATUS_ACTIVE = "active"      # 🔥 活跃
@@ -56,6 +62,64 @@ def months_since(date_obj):
     if date_obj is None:
         return None
     return (TODAY.year - date_obj.year) * 12 + (TODAY.month - date_obj.month)
+
+
+def load_history():
+    """读 star_history.json,不存在或损坏则返回空。"""
+    if not os.path.isfile(HISTORY_OUT):
+        return {}
+    try:
+        with open(HISTORY_OUT, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return {}
+
+
+def save_history(history):
+    os.makedirs(os.path.dirname(HISTORY_OUT), exist_ok=True)
+    with open(HISTORY_OUT, "w", encoding="utf-8") as f:
+        json.dump(history, f, ensure_ascii=False, separators=(",", ":"))
+
+
+def prune_history(history):
+    """只保留最近 HISTORY_DAYS 个有数据的日期,裁掉更老的快照。"""
+    all_dates = set()
+    for name, snaps in history.items():
+        if name == "_meta":
+            continue
+        all_dates.update(snaps.keys())
+    keep = set(sorted(all_dates)[-HISTORY_DAYS:])
+    for name in list(history.keys()):
+        if name == "_meta":
+            continue
+        history[name] = {d: v for d, v in history[name].items() if d in keep}
+        if not history[name]:
+            del history[name]
+    history["_meta"] = {"dates": sorted(keep)}
+    return history
+
+
+def compute_deltas(snaps, today_str):
+    """由单个项目的 {date: stars} 快照算今日/7日涨幅。
+    1d = 今日 - 最近一个早于今日的快照;7d = 今日 - ≤7天前最接近的快照。
+    缺历史则返回 None。"""
+    today_val = snaps.get(today_str)
+    if today_val is None:
+        return None, None
+    past = sorted(d for d in snaps if d < today_str)
+    if not past:
+        return None, None
+
+    delta_1d = today_val - snaps[past[-1]]
+
+    today_date = datetime.date.fromisoformat(today_str)
+    cutoff = (today_date - datetime.timedelta(days=7)).isoformat()
+    # 取 ≤7 天前里最接近 cutoff 的快照(即第一个 >= cutoff 的更早点,容错缺天)
+    on_or_before_week = [d for d in past if d <= cutoff]
+    base_7d_date = on_or_before_week[-1] if on_or_before_week else past[0]
+    delta_7d = today_val - snaps[base_7d_date]
+
+    return delta_1d, delta_7d
 
 
 def compute_health(entry):
@@ -135,6 +199,9 @@ def build_software(path):
 
 
 def main():
+    today_str = str(TODAY)
+    history = load_history()
+
     # 软件
     sw_dir = os.path.join(CACHE, "software")
     software = []
@@ -144,6 +211,19 @@ def main():
         item = build_software(os.path.join(sw_dir, fn))
         if item:
             software.append(item)
+            # 记录今日 star 快照
+            snaps = history.setdefault(item["name"], {})
+            snaps[today_str] = item["stars"]
+
+    prune_history(history)
+
+    # 回填涨幅字段
+    for item in software:
+        d1, d7 = compute_deltas(history.get(item["name"], {}), today_str)
+        item["stars_delta_1d"] = d1
+        item["stars_delta_7d"] = d7
+
+    save_history(history)
 
     # 分类(带描述)
     tags = []
@@ -180,9 +260,17 @@ def main():
     by_status = {}
     for s in software:
         by_status[s["status"]] = by_status.get(s["status"], 0) + 1
+    top = sorted(
+        (s for s in software if s.get("stars_delta_1d")),
+        key=lambda s: s["stars_delta_1d"], reverse=True,
+    )[:3]
     print(f"软件: {len(software)} | 分类: {len(tags)} | 许可证: {len(licenses)}")
     print(f"状态分布: {by_status}")
+    print(f"星历史日期: {history['_meta']['dates']}")
+    if top:
+        print("今日涨星 Top3: " + ", ".join(f"{s['name']} +{s['stars_delta_1d']}" for s in top))
     print(f"输出: {OUT}")
+    print(f"星历史: {HISTORY_OUT}")
 
 
 if __name__ == "__main__":
