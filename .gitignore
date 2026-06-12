@@ -1,0 +1,16 @@
+# dependencies
+node_modules/
+dist/
+
+# 数据缓存(可由 fetch_data.py 重新拉取)
+.cache/
+
+# Python
+__pycache__/
+*.pyc
+
+# 密钥
+.env
+
+# 翻译缓存为产物,保留
+# public/data.json 为构建产物,保留
