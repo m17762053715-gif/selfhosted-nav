@@ -43,31 +43,53 @@ function t(text) {
 }
 
 async function load() {
+  showSkeleton();
   const base = import.meta.env.BASE_URL;
-  const [dataRes, trRes] = await Promise.all([
-    fetch(`${base}data.json`),
-    fetch(`${base}translations.json`).catch(() => null),
-  ]);
-  const data = await dataRes.json();
-  state.all = data.software;
-  state.tags = data.tags;
-  state.licenses = data.licenses;
-  if (trRes && trRes.ok) {
-    try {
-      state.tr = await trRes.json();
-    } catch {
-      state.tr = {};
+  try {
+    const [dataRes, trRes] = await Promise.all([
+      fetch(`${base}data.json`),
+      fetch(`${base}translations.json`).catch(() => null),
+    ]);
+    if (!dataRes.ok) throw new Error(`data.json ${dataRes.status}`);
+    const data = await dataRes.json();
+    state.all = data.software;
+    state.tags = data.tags;
+    state.licenses = data.licenses;
+    if (trRes && trRes.ok) {
+      try {
+        state.tr = await trRes.json();
+      } catch {
+        state.tr = {};
+      }
     }
+    state.fuse = new Fuse(state.all, {
+      keys: ["name", "description", "tags"],
+      threshold: 0.38,
+      ignoreLocation: true,
+    });
+    buildFacets();
+    bindEvents();
+    $("stats").textContent = `${state.all.length} 个开源自托管软件`;
+    render();
+  } catch (err) {
+    showError();
   }
-  state.fuse = new Fuse(state.all, {
-    keys: ["name", "description", "tags"],
-    threshold: 0.38,
-    ignoreLocation: true,
-  });
-  buildFacets();
-  bindEvents();
-  $("stats").textContent = `${state.all.length} 个开源自托管软件`;
-  render();
+}
+
+// 加载占位骨架卡
+function showSkeleton() {
+  $("grid").innerHTML = Array.from({ length: 9 })
+    .map(() => `<div class="skeleton-card"></div>`)
+    .join("");
+}
+
+// 加载失败提示(可重试)
+function showError() {
+  $("grid").innerHTML = `<div class="error-state">
+    <div class="empty-icon">⚠️</div>
+    <div class="empty-title">数据加载失败</div>
+    <div class="empty-sub">检查网络后 <a onclick="location.reload()">点此重试</a>。</div>
+  </div>`;
 }
 
 // 统计每个分面值的出现次数,降序取前 N
@@ -161,6 +183,30 @@ function bindEvents() {
       el.style.display = name.includes(q) ? "" : "none";
     }
   });
+  $("clearFilters").addEventListener("click", clearFilters);
+}
+
+// 重置所有搜索/筛选条件,恢复全量列表
+function clearFilters() {
+  state.query = "";
+  state.activeCategories.clear();
+  state.activePlatforms.clear();
+  state.activeLicenses.clear();
+  state.hideArchived = true;
+  state.dockerOnly = false;
+  // 同步 UI 控件
+  $("search").value = "";
+  $("catFilter").value = "";
+  $("hideArchived").checked = true;
+  $("dockerOnly").checked = false;
+  for (const facet of ["categories", "platforms", "licenses"]) {
+    for (const el of $(facet).children) {
+      const cb = el.querySelector("input");
+      if (cb) cb.checked = false;
+      el.style.display = "";
+    }
+  }
+  render();
 }
 
 function applyFilters() {
@@ -252,12 +298,15 @@ function cardHtml(s, position, deltaField) {
   const trend = dv && dv > 0 ? `<span class="trend">+${formatNum(dv)} ↑</span>` : "";
 
   const links = [
-    s.website_url && `<a href="${escapeHtml(s.website_url)}" target="_blank" rel="noopener">官网</a>`,
-    s.source_code_url && `<a href="${escapeHtml(s.source_code_url)}" target="_blank" rel="noopener">源码</a>`,
-    s.demo_url && `<a href="${escapeHtml(s.demo_url)}" target="_blank" rel="noopener">演示</a>`,
+    s.website_url && `<a href="${escapeHtml(s.website_url)}" target="_blank" rel="noopener">🌐 官网</a>`,
+    s.source_code_url && `<a href="${escapeHtml(s.source_code_url)}" target="_blank" rel="noopener">⌨ 源码</a>`,
+    s.demo_url && `<a href="${escapeHtml(s.demo_url)}" target="_blank" rel="noopener">▶ 演示</a>`,
   ].filter(Boolean).join("");
 
-  return `<article class="card ${st.cls}">
+  // 榜单前三名:卡片整体突出
+  const top3 = position && position <= 3 ? ` card-top3 top-${position}` : "";
+
+  return `<article class="card ${st.cls}${top3}">
     <div class="card-head">
       <h3 class="card-name">${rankBadge}${escapeHtml(s.name)}</h3>
       <span class="status" title="健康分 ${score}">${st.icon} ${score}</span>
