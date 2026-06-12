@@ -32,6 +32,7 @@ jobs:
       - name: 拉取数据并计算
         run: |
           python scripts/fetch_data.py
+          python scripts/enrich_codeberg.py
           python scripts/build_dataset.py
 
       - name: 翻译新增条目(可缺省,失败不中断)

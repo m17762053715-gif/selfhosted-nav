@@ -2,6 +2,16 @@
 
 本项目版本遵循 [SemVer](https://semver.org/lang/zh-CN/)。
 
+## [0.2.1] - 2026-06-12
+
+### 补全更新时间
+
+- 新增 `scripts/enrich_codeberg.py`：调 Codeberg(Gitea) API 补全托管在
+  codeberg.org 的项目的最后更新时间/Star/归档状态。上游 awesome-selfhosted
+  只抓 GitHub，导致这些项目「更新时间」显示未知。
+- 接入每日 CI（`fetch_data → enrich_codeberg → build_dataset`）。
+- 效果：「更新时间」未知项 200 → 162，补全 38 个（多为活跃项目）。
+
 ## [0.2.0] - 2026-06-12
 
 ### 重做分类体系（小白友好）
