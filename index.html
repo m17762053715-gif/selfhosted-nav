@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>自托管导航 · SelfHosted Nav</title>
+  <meta name="description" content="1300+ 自托管开源软件中文导航,按健康度排序,废弃预警,多维筛选。" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">🚀</span>
+      <h1>自托管导航</h1>
+      <span class="subtitle">SelfHosted Nav</span>
+    </div>
+    <div class="search-wrap">
+      <input id="search" type="search" placeholder="搜索软件,试试 “Notion” “photos” “监控”…" autocomplete="off" />
+    </div>
+    <div class="stats" id="stats"></div>
+    <button id="langToggle" class="lang-toggle" title="切换中英文">中/EN</button>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="filter-group">
+        <label class="filter-title">排序</label>
+        <select id="sort">
+          <option value="health">健康度</option>
+          <option value="stars">Star 数</option>
+          <option value="updated">最近更新</option>
+          <option value="name">名称</option>
+        </select>
+      </div>
+
+      <div class="filter-group toggles">
+        <label><input type="checkbox" id="hideArchived" checked /> 隐藏已废弃/停更</label>
+        <label><input type="checkbox" id="dockerOnly" /> 仅 Docker 部署</label>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-title">分类</label>
+        <input id="catFilter" class="mini-search" type="search" placeholder="筛选分类…" />
+        <div class="facet" id="categories"></div>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-title">语言 / 平台</label>
+        <div class="facet" id="platforms"></div>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-title">许可证</label>
+        <div class="facet" id="licenses"></div>
+      </div>
+    </aside>
+
+    <main class="content">
+      <div class="result-bar" id="resultBar"></div>
+      <div class="grid" id="grid"></div>
+      <div class="empty" id="empty" hidden>没有匹配的软件,换个条件试试。</div>
+    </main>
+  </div>
+
+  <footer class="footer">
+    数据来源 <a href="https://github.com/awesome-selfhosted/awesome-selfhosted-data" target="_blank" rel="noopener">awesome-selfhosted</a>,
+    以 <a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener">CC-BY-SA 3.0</a> 授权。本站为非官方中文导航。
+  </footer>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

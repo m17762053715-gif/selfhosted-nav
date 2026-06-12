@@ -1,0 +1,17 @@
+{
+  "name": "selfhosted-nav",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "中文自托管软件导航站 - 数据来自 awesome-selfhosted (CC-BY-SA)",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0"
+  },
+  "dependencies": {
+    "fuse.js": "^7.0.0"
+  }
+}
