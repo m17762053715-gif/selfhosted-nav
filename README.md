@@ -31,6 +31,21 @@ AGNES_API_KEY=xxx python scripts/translate.py   # 增量翻译新增条目
 
 翻译带缓存,只翻译尚未翻过的条目,可中断续跑。
 
+## 部署
+
+线上地址:https://m17762053715-gif.github.io/selfhosted-nav/
+
+当前用 `gh-pages` 分支手动部署。更新站点:
+
+```bash
+GITHUB_ACTIONS=true npm run build       # 用 Pages 子路径构建
+npx gh-pages -d dist -b gh-pages         # 推送到 gh-pages 分支
+```
+
+> 自动部署:`.github/_pending/deploy.yml` 是一份 GitHub Actions 工作流。
+> 待 gh token 获得 `workflow` 权限后(`gh auth refresh -s workflow`),
+> 将其移回 `.github/workflows/` 并推送,即可改为 push 自动部署。
+
 ## 数据来源与许可
 
 软件数据来自 [awesome-selfhosted-data](https://github.com/awesome-selfhosted/awesome-selfhosted-data),
