@@ -1417,5 +1417,9 @@
 "Your own online file storage, social network or email server.": "您自己的在线文件存储、社交网络或邮件服务器。",
 "Youtube-like (_without censorship and features you don't need!_) video sharing app written in Go which also supports automatic transcoding to MP4 H.265 AAC, multiple collections and RSS feed.": "用 Go 编写的类 YouTube 视频分享应用（无审查且去除多余功能），支持自动转码为 MP4 H.265 AAC、多集合和 RSS 订阅。",
 "Zenko CloudServer, an open-source implementation of a server handling the Amazon S3 protocol.": "Zenko CloudServer 是处理 Amazon S3 协议的开源服务器实现。",
-"Zulip is a powerful, open source group chat application.": "Zulip 是一款强大的开源群组聊天应用。"
+"Zulip is a powerful, open source group chat application.": "Zulip 是一款强大的开源群组聊天应用。",
+"Calendar syncing tool that pulls and pushes events between calendar sources and destinations via iCal/ICS or OAuth, with support for anonymized busy/free events.": "一款日历同步工具，通过 iCal/ICS 或 OAuth 在日历源和目标之间拉取和推送事件，支持匿名化的忙碌/空闲事件。",
+"Easy-to-use, metadata-driven, open-source document management system (DMS) for small businesses that sorts documents almost by itself.": "一款易于使用、基于元数据、面向小型企业的开源文档管理系统 (DMS)，几乎可以自动对文档进行分类。",
+"Markdown notes taking app with live preview, document encryption, multi-user support, multi-organization capabilities and more.": "一款 Markdown 笔记应用，具备实时预览、文档加密、多用户支持、多组织功能等特性。",
+"Project workspace built around an infinite canvas; embed GitHub, GitLab, Gitea, and Forgejo repositories alongside notes, links, and tasks, with real-time collaboration.": "围绕无限画布构建的项目工作区；可嵌入 GitHub、GitLab、Gitea 和 Forgejo 仓库，以及笔记、链接和任务，支持实时协作。"
 }
