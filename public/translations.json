@@ -1424,5 +1424,6 @@
 "Project workspace built around an infinite canvas; embed GitHub, GitLab, Gitea, and Forgejo repositories alongside notes, links, and tasks, with real-time collaboration.": "围绕无限画布构建的项目工作区；可嵌入 GitHub、GitLab、Gitea 和 Forgejo 仓库，以及笔记、链接和任务，支持实时协作。",
 "Handcrafted bookmark manager combining powerful tagging, instant search, and a clean, distraction-free interface. Built for large collections and advanced workflows, optimized for efficiency and ease-of-use.": "手工打造的书签管理器，结合强大的标签、即时搜索和简洁无干扰的界面。专为大型收藏和高级工作流设计，优化了效率和易用性。",
 "Complete ecosystem for time management using the Pomodoro technique.": "使用番茄工作法进行时间管理的完整生态系统。",
-"File converter for images, video, audio, json, excel and more. Supports over 2,000 conversions!.": "支持图片、视频、音频、JSON、Excel等超过2,000种格式转换的文件转换器。"
+"File converter for images, video, audio, json, excel and more. Supports over 2,000 conversions!.": "支持图片、视频、音频、JSON、Excel等超过2,000种格式转换的文件转换器。",
+"End-to-end encrypted file sharing with password protection, download limits, and auto-expiration, integrated with Keycloak for authentication.": "端到端加密的文件共享，支持密码保护、下载限制和自动过期，并与 Keycloak 集成用于身份验证。"
 }
