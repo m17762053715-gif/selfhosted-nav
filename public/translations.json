@@ -1426,5 +1426,7 @@
 "Complete ecosystem for time management using the Pomodoro technique.": "使用番茄工作法进行时间管理的完整生态系统。",
 "File converter for images, video, audio, json, excel and more. Supports over 2,000 conversions!.": "支持图片、视频、音频、JSON、Excel等超过2,000种格式转换的文件转换器。",
 "End-to-end encrypted file sharing with password protection, download limits, and auto-expiration, integrated with Keycloak for authentication.": "端到端加密的文件共享，支持密码保护、下载限制和自动过期，并与 Keycloak 集成用于身份验证。",
-"Fully transparent SSH, HTTPS, Kubernetes, MySQL and Postgres bastion/PAM that doesn't need additional client-side software.": "完全透明的 SSH、HTTPS、Kubernetes、MySQL 和 Postgres 堡垒机/PAM，无需额外的客户端软件。"
+"Fully transparent SSH, HTTPS, Kubernetes, MySQL and Postgres bastion/PAM that doesn't need additional client-side software.": "完全透明的 SSH、HTTPS、Kubernetes、MySQL 和 Postgres 堡垒机/PAM，无需额外的客户端软件。",
+"Lightweight, self‑hosted snippet manager for saving and organizing code and text snippets with folders, tags, API, and GitHub Gist sync.": "轻量级自托管代码片段管理器，支持文件夹、标签、API 和 GitHub Gist 同步，用于保存和组织代码及文本片段。",
+"Simple app for tracking monthly spending and working towards financial goals.": "简单易用的应用，用于跟踪每月支出并实现财务目标。"
 }
