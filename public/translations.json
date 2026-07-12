@@ -1431,5 +1431,8 @@
 "Simple app for tracking monthly spending and working towards financial goals.": "简单易用的应用，用于跟踪每月支出并实现财务目标。",
 "Simple domain redirection management tool.": "简单的域名重定向管理工具。",
 "High-fidelity music server for Raspberry Pi with iOS and Android companion apps.": "适用于树莓派的高保真音乐服务器，配备 iOS 和 Android 配套应用。",
-"Kubernetes operator for self-hosted LLM inference with pluggable runtimes (llama.cpp, vLLM, TGI, Ollama, vllm-swift), multi-GPU sharding, NVIDIA CUDA + Apple Silicon Metal support, and OpenAI-compatible API.": "用于自托管 LLM 推理的 Kubernetes 操作器，支持可插拔运行时（llama.cpp、vLLM、TGI、Ollama、vllm-swift）、多 GPU 分片、NVIDIA CUDA 和 Apple Silicon Metal 支持，以及 OpenAI 兼容 API。"
+"Kubernetes operator for self-hosted LLM inference with pluggable runtimes (llama.cpp, vLLM, TGI, Ollama, vllm-swift), multi-GPU sharding, NVIDIA CUDA + Apple Silicon Metal support, and OpenAI-compatible API.": "用于自托管 LLM 推理的 Kubernetes 操作器，支持可插拔运行时（llama.cpp、vLLM、TGI、Ollama、vllm-swift）、多 GPU 分片、NVIDIA CUDA 和 Apple Silicon Metal 支持，以及 OpenAI 兼容 API。",
+"Flexible kanban app that helps you organise work, track progress, and deliver results (alternative to Trello).": "灵活的看板应用，帮助您组织工作、跟踪进度并交付成果（Trello 的替代方案）。",
+"Linux based CNC machine controller. It can drive milling machines, lathes, 3D printers, laser cutters, plasma cutters, robot arms, hexapods, and more.": "基于 Linux 的 CNC 机床控制器，可驱动铣床、车床、3D 打印机、激光切割机、等离子切割机、机械臂、六足机器人等。",
+"Share events, sell tickets, and bring communities together.": "共享活动、销售门票，并将社区凝聚在一起。"
 }
