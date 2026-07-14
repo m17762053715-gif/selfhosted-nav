@@ -1434,5 +1434,8 @@
 "Kubernetes operator for self-hosted LLM inference with pluggable runtimes (llama.cpp, vLLM, TGI, Ollama, vllm-swift), multi-GPU sharding, NVIDIA CUDA + Apple Silicon Metal support, and OpenAI-compatible API.": "用于自托管 LLM 推理的 Kubernetes 操作器，支持可插拔运行时（llama.cpp、vLLM、TGI、Ollama、vllm-swift）、多 GPU 分片、NVIDIA CUDA 和 Apple Silicon Metal 支持，以及 OpenAI 兼容 API。",
 "Flexible kanban app that helps you organise work, track progress, and deliver results (alternative to Trello).": "灵活的看板应用，帮助您组织工作、跟踪进度并交付成果（Trello 的替代方案）。",
 "Linux based CNC machine controller. It can drive milling machines, lathes, 3D printers, laser cutters, plasma cutters, robot arms, hexapods, and more.": "基于 Linux 的 CNC 机床控制器，可驱动铣床、车床、3D 打印机、激光切割机、等离子切割机、机械臂、六足机器人等。",
-"Share events, sell tickets, and bring communities together.": "共享活动、销售门票，并将社区凝聚在一起。"
+"Share events, sell tickets, and bring communities together.": "共享活动、销售门票，并将社区凝聚在一起。",
+"A personal, self-hosted cloud storage and media management application built for privacy, efficiency, and aesthetics.": "一款注重隐私、效率与美学的个人自托管云存储及媒体管理应用。",
+"AI gateway written in Go with a unified OpenAI-compatible API for multiple LLM providers, USD cost tracking, budgets, usage analytics, guardrails, caching, and an admin dashboard.": "基于 Go 编写的 AI 网关，提供统一 OpenAI 兼容 API、多 LLM 支持、USD 成本追踪、预算、使用分析、安全护栏、缓存及管理后台。",
+"Offline-first task manager with weekly planning, project boards, real-time sync, Vim keybindings, desktop quick add, and import from popular task managers (alternative to TickTick, Todoist).": "离线优先的任务管理器，具备周计划、项目看板、实时同步、Vim 快捷键、桌面快速添加功能，并支持从主流任务管理器导入（TickTick、Todoist 的替代方案）。"
 }
