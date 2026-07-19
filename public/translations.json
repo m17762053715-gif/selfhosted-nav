@@ -1439,5 +1439,7 @@
 "AI gateway written in Go with a unified OpenAI-compatible API for multiple LLM providers, USD cost tracking, budgets, usage analytics, guardrails, caching, and an admin dashboard.": "基于 Go 编写的 AI 网关，提供统一 OpenAI 兼容 API、多 LLM 支持、USD 成本追踪、预算、使用分析、安全护栏、缓存及管理后台。",
 "Offline-first task manager with weekly planning, project boards, real-time sync, Vim keybindings, desktop quick add, and import from popular task managers (alternative to TickTick, Todoist).": "离线优先的任务管理器，具备周计划、项目看板、实时同步、Vim 快捷键、桌面快速添加功能，并支持从主流任务管理器导入（TickTick、Todoist 的替代方案）。",
 "Authenticated yt-dlp download queue for video, audio and subtitles, with history, mobile sharing and NAS file management (fork of youtube-dl-server).": "为视频、音频和字幕提供经过身份验证的 yt-dlp 下载队列，支持历史记录、移动共享和 NAS 文件管理（youtube-dl-server 的分支）。",
-"Homelab management tool for monitoring hosts, Docker services, Wake-on-LAN, inventory, and remote operations, with a web dashboard and MCP integrations.": "用于监控主机、Docker 服务、Wake-on-LAN、库存和远程操作的 Homelab 管理工具，配备 Web 仪表板和 MCP 集成。"
+"Homelab management tool for monitoring hosts, Docker services, Wake-on-LAN, inventory, and remote operations, with a web dashboard and MCP integrations.": "用于监控主机、Docker 服务、Wake-on-LAN、库存和远程操作的 Homelab 管理工具，配备 Web 仪表板和 MCP 集成。",
+"Collaborative personal and family travel organizer.": "协作式个人和家庭旅行组织者。",
+"Travel Organization": "旅行组织"
 }
